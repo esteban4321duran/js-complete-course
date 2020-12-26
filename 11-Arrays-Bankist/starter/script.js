@@ -443,38 +443,38 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300, -540];
 // *************************************************
 // non-literal array creation
 // *************************************************
-let a = new Array();
-let b = new Array(5);
-let c = new Array(1, 2, 3, 4, 5, 6, 7);
+// let a = new Array();
+// let b = new Array(5);
+// let c = new Array(1, 2, 3, 4, 5, 6, 7);
 
-console.log(a);
-console.log(b);
-console.log(c);
+// console.log(a);
+// console.log(b);
+// console.log(c);
 
-a = a.map(e => 5);
-b = b.map(e => 7);
+// a = a.map(e => 5);
+// b = b.map(e => 7);
 
-console.log(a);
-console.log(b);
-console.log(c);
+// console.log(a);
+// console.log(b);
+// console.log(c);
 
-a.fill(2.54356);
-b.fill(2.54356, 2);
-b.fill(2.54356, 3, 5);
+// a.fill(2.54356);
+// b.fill(2.54356, 2);
+// b.fill(2.54356, 3, 5);
 
-console.log(a);
-console.log(b);
-console.log(c);
+// console.log(a);
+// console.log(b);
+// console.log(c);
 
-const x = Array.from({ length: 7 }, (_, i) => (i + 1) * 5);
-console.log(x);
+// const x = Array.from({ length: 7 }, (_, i) => (i + 1) * 5);
+// console.log(x);
 
-const rng = Array.from({ length: 100 }, _ => Math.floor(Math.random() * 6 + 1));
-console.log(rng);
+// const rng = Array.from({ length: 100 }, _ => Math.floor(Math.random() * 6 + 1));
+// console.log(rng);
 
-labelBalance.addEventListener('click', function () {
-  const movementsUI = Array.from(
-    document.querySelectorAll('.movements__value')
-  );
-  console.log(movementsUI);
-});
+// labelBalance.addEventListener('click', function () {
+//   const movementsUI = Array.from(
+//     document.querySelectorAll('.movements__value')
+//   );
+//   console.log(movementsUI);
+// });
