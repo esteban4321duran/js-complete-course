@@ -79,59 +79,65 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 /////////////////////////////////////////////////
-// Functions
+//states
+let movementsSorted = false;
 
-const displayMovements = function (movements, sort = false) {
+const updateUI = function (account) {
+  calcDisplayMovements(account.movements);
+  calcDisplayBalance(account);
+  calcDisplaySummary(account);
+};
+
+const calcDisplayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = '';
 
+  //sort mutates the original array. that's why we create a shallow copy of the array and sort that one
   const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
-
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov}€</div>
+        <div class="movements__date">3 days ago</div>
+        <div class="movements__value">€${mov}</div>
       </div>
     `;
-
-    containerMovements.insertAdjacentHTML('afterbegin', html);
+    containerMovements.insertAdjacentHTML('afterBegin', html);
   });
 };
 
-const calcDisplayBalance = function (acc) {
-  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance}€`;
+const calcDisplayBalance = function (account) {
+  account.balance = account.movements.reduce((acc, mov) => (acc += mov), 0);
+  labelBalance.textContent = `€${account.balance}`;
 };
 
-const calcDisplaySummary = function (acc) {
-  const incomes = acc.movements
+const calcDisplaySummary = function (account) {
+  const movements = account.movements;
+  const incomes = movements
     .filter(mov => mov > 0)
-    .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+    .reduce((acc, deposit) => (acc += deposit), 0);
+  labelSumIn.textContent = `€${incomes}`;
 
-  const out = acc.movements
+  const outcomes = movements
     .filter(mov => mov < 0)
-    .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out)}€`;
+    .reduce((acc, withdrawal) => (acc += withdrawal), 0);
+  labelSumOut.textContent = `€${Math.abs(outcomes)}`;
 
-  const interest = acc.movements
+  //in our bank each deposit gets a 1.2% interest
+  const interest = movements
     .filter(mov => mov > 0)
-    .map(deposit => (deposit * acc.interestRate) / 100)
-    .filter((int, i, arr) => {
-      // console.log(arr);
-      return int >= 1;
-    })
-    .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest}€`;
+    .map(deposit => (deposit * account.interestRate) / 100)
+    .filter(interest => interest >= 1) //Exclude interests that are below 1 euro
+    .reduce((acc, interest) => (acc += interest), 0);
+  labelSumInterest.textContent = `€${interest}`;
 };
 
-const createUsernames = function (accs) {
-  accs.forEach(function (acc) {
-    acc.username = acc.owner
+const createUsernames = function (accounts) {
+  accounts.forEach(account => {
+    account.username = account.owner
       .toLowerCase()
       .split(' ')
       .map(name => name[0])
@@ -140,114 +146,134 @@ const createUsernames = function (accs) {
 };
 createUsernames(accounts);
 
-const updateUI = function (acc) {
-  // Display movements
-  displayMovements(acc.movements);
-
-  // Display balance
-  calcDisplayBalance(acc);
-
-  // Display summary
-  calcDisplaySummary(acc);
-};
-
-///////////////////////////////////////
-// Event handlers
+//event handlers
 let currentAccount;
 
 btnLogin.addEventListener('click', function (e) {
-  // Prevent form from submitting
+  //Prevent form from submitting IE reload the page
   e.preventDefault();
 
+  //Find the account whose username and pin match those entered by the user
   currentAccount = accounts.find(
-    acc => acc.username === inputLoginUsername.value
+    account => account.username === inputLoginUsername.value
   );
-  console.log(currentAccount);
-
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
-    // Display UI and message
-    labelWelcome.textContent = `Welcome back, ${
-      currentAccount.owner.split(' ')[0]
-    }`;
-    containerApp.style.opacity = 100;
-
-    // Clear input fields
-    inputLoginUsername.value = inputLoginPin.value = '';
-    inputLoginPin.blur();
-
-    // Update UI
-    updateUI(currentAccount);
+  //This is a way of checking if the value returned is not undefined IE the username entered corresponds to an account that exists
+  // if (!currentAccount) {
+  //   console.log('ACCOUNT NOT FOUND');
+  //   return;
+  // }
+  //However, using the conditional chain is a much more elgant and ES6-like way of doing such thing
+  if (currentAccount?.pin === +inputLoginPin.value) {
+    // console.log('LOGIN SUCCESSFUL');
+    //display UI, welcome message, balance, summary and movements
+    login(currentAccount);
+  } else {
+    // console.log('WRONG ACCOUNT OR PASSWORD');
   }
 });
+
+const login = function (account) {
+  displayWelcome(account);
+  displayUI();
+  updateUI(account);
+  clearInputField(inputLoginUsername);
+  clearInputField(inputLoginPin);
+  movementsSorted = false;
+};
+
+const resetWelcome = function () {
+  labelWelcome.innerHTML = 'Log in to get started';
+};
+const displayWelcome = function (currentAccount) {
+  labelWelcome.textContent = `Welcome, ${currentAccount.owner.split(' ')[0]}`;
+};
+const displayUI = function () {
+  containerApp.style.opacity = 100;
+};
+
+const hideUI = function () {
+  containerApp.style.opacity = 0;
+  resetWelcome();
+};
+const clearInputField = function (field) {
+  field.value = '';
+  field.blur();
+};
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
-  const amount = Number(inputTransferAmount.value);
-  const receiverAcc = accounts.find(
-    acc => acc.username === inputTransferTo.value
+
+  const amount = +inputTransferAmount.value;
+  const receiverAccount = accounts.find(
+    account => account.username === inputTransferTo.value
   );
-  inputTransferAmount.value = inputTransferTo.value = '';
-
-  if (
-    amount > 0 &&
-    receiverAcc &&
-    currentAccount.balance >= amount &&
-    receiverAcc?.username !== currentAccount.username
-  ) {
-    // Doing the transfer
+  if (checkMovement(currentAccount, receiverAccount, amount)) {
     currentAccount.movements.push(-amount);
-    receiverAcc.movements.push(amount);
-
-    // Update UI
+    receiverAccount.movements.push(amount);
     updateUI(currentAccount);
+    clearInputField(inputTransferTo);
+    clearInputField(inputTransferAmount);
   }
 });
+
+const checkMovement = function (currentAccount, receiverAccount, amount) {
+  return (
+    receiverAccount &&
+    currentAccount?.username !== receiverAccount?.username &&
+    amount > 0 &&
+    currentAccount?.balance >= amount
+  );
+};
 
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
-
-  const amount = Number(inputLoanAmount.value);
-
-  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    // Add movement
+  const amount = +inputLoanAmount.value;
+  if (checkLoanAmount(currentAccount.movements, amount)) {
     currentAccount.movements.push(amount);
-
-    // Update UI
     updateUI(currentAccount);
   }
-  inputLoanAmount.value = '';
 });
-
+const checkLoanAmount = function (movements, amount) {
+  return amount > 0 && movements.some(mov => mov > amount * 0.1);
+};
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
-
+  const delUsername = inputCloseUsername.value;
+  const delPin = +inputClosePin.value;
   if (
-    inputCloseUsername.value === currentAccount.username &&
-    Number(inputClosePin.value) === currentAccount.pin
+    checkCredentials(currentAccount, { username: delUsername, pin: delPin })
   ) {
-    const index = accounts.findIndex(
-      acc => acc.username === currentAccount.username
+    const delIndex = accounts.findIndex(
+      account => account.username === delUsername
     );
-    console.log(index);
-    // .indexOf(23)
 
-    // Delete account
-    accounts.splice(index, 1);
-
-    // Hide UI
-    containerApp.style.opacity = 0;
+    accounts.splice(delIndex, 1);
+    clearInputField(inputCloseUsername);
+    clearInputField(inputClosePin);
+    hideUI();
   }
-
-  inputCloseUsername.value = inputClosePin.value = '';
 });
 
-let sorted = false;
+const checkCredentials = function (currentAccount, credentials) {
+  return (
+    currentAccount.username === credentials.username &&
+    currentAccount.pin === credentials.pin
+  );
+};
+
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
-  sorted = !sorted;
+  movementsSorted = !movementsSorted;
+  calcDisplayMovements(currentAccount.movements, movementsSorted);
+  btnSort.classList.toggle('sorted');
 });
-
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
+
+// *******************************************
+// numbers
+// *******************************************
+console.log(23 === 23.0);
+console.log(0.1 + 0.2);
+console.log(Number.);
