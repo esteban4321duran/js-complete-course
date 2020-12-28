@@ -18,8 +18,7 @@ const closeModal = function () {
   overlay.classList.add('hidden');
 };
 
-for (let i = 0; i < btnsOpenModal.length; i++)
-  btnsOpenModal[i].addEventListener('click', openModal);
+btnsOpenModal.forEach(btn => btn.addEventListener('click', openModal));
 
 btnCloseModal.addEventListener('click', closeModal);
 overlay.addEventListener('click', closeModal);
@@ -29,3 +28,42 @@ document.addEventListener('keydown', function (e) {
     closeModal();
   }
 });
+
+///////////////////////////////////////////////////////
+// LECTURES
+///////////////////////////////////////////////////////
+// **********************************************
+//selecting nodes
+// **********************************************
+// console.log(document.documentElement);
+// console.log(document.head);
+// console.log(document.body);
+
+// const sections = document.querySelectorAll('.section');
+// console.log(sections);
+
+// const buttons = document.getElementsByTagName('button');
+// console.log(buttons);
+
+// **********************************************
+// creating & inserting nodes
+// **********************************************
+const message = document.createElement('div');
+message.classList.add('cookie-message');
+// message.textContent =
+//   'We use cookies to provide improved functionality & analytics';
+message.innerHTML =
+  'We use cookies to provide improved functionality & analytics. <button class="btn btn--close-cookie">Got it!</button>';
+
+const header = document.querySelector('.header');
+// header.prepend(message);
+header.append(message);
+// const [, , , openAcc1] = document.querySelectorAll('a');
+// header.append(openAcc1);
+
+// **********************************************
+// Deleting nodes
+// **********************************************
+document
+  .querySelector('.btn--close-cookie')
+  .addEventListener('click', () => message.remove());
