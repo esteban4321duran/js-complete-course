@@ -105,7 +105,7 @@ const calcDisplayMovements = function (account, sort = false) {
     const formattedMov = formatCurrency({
       locale: account.locale,
       currency: account.currency,
-      amount: mov,
+      amount: Math.abs(mov),
     });
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
