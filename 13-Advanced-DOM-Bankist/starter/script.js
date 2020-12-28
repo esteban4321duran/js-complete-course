@@ -67,3 +67,5 @@ header.append(message);
 document
   .querySelector('.btn--close-cookie')
   .addEventListener('click', () => message.remove());
+
+document.documentElement.style.setProperty('--color-primary', 'purple');
