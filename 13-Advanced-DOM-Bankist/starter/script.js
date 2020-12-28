@@ -8,7 +8,8 @@ const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 
-const openModal = function () {
+const openModal = function (e) {
+  e.preventDefault();
   modal.classList.remove('hidden');
   overlay.classList.remove('hidden');
 };
@@ -68,4 +69,15 @@ document
   .querySelector('.btn--close-cookie')
   .addEventListener('click', () => message.remove());
 
+<<<<<<< HEAD
 document.documentElement.style.setProperty('--color-primary', 'purple');
+=======
+//**********************************************
+// styles
+// **********************************************
+message.style.backgroundColor = '#37383d';
+console.log(message.style.height);
+// console.log(getComputedStyle(message));
+message.style.height =
+  Number.parseFloat(getComputedStyle(message).height, 10) + 40 + 'px';
+>>>>>>> 06de8717f3fdb71c8b60a70df08a55931912dbf4
