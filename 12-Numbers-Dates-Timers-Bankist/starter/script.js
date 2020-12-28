@@ -80,8 +80,9 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 /////////////////////////////////////////////////
-//states
+//global variables
 let movementsSorted = false;
+const logOutTimerStart = 120;
 
 const updateUI = function (account) {
   calcDisplayMovements(account);
@@ -146,7 +147,7 @@ const calcDisplaySummary = function (account) {
   labelSumOut.textContent = formatCurrency({
     locale: account.locale,
     currency: account.currency,
-    amount: outcomes,
+    amount: Math.abs(outcomes),
   });
 
   //in our bank each deposit gets a 1.2% interest
@@ -176,6 +177,8 @@ createUsernames(accounts);
 //event handlers
 
 let currentAccount;
+let currentLogOutTimer;
+let currentClockTimer;
 
 btnLogin.addEventListener('click', function (e) {
   //Prevent form from submitting IE reload the page
@@ -219,7 +222,14 @@ const login = function (account) {
     options
   ).format(new Date());
   clock(account.locale);
-  setInterval(clock, 1000, currentAccount.locale);
+  //check if timers already were already started. if they were, end them in order to restart them
+  if (currentClockTimer) clearInterval(currentClockTimer);
+  currentClockTimer = startClock();
+  if (currentLogOutTimer) clearInterval(currentLogOutTimer);
+  currentLogOutTimer = startLogOutTimer(logOutTimerStart);
+};
+const startClock = function () {
+  return setInterval(clock, 1000, currentAccount.locale);
 };
 const clock = function (locale) {
   const options = {
@@ -242,10 +252,52 @@ const displayUI = function () {
   containerApp.style.opacity = 100;
 };
 
+const logOut = function () {
+  hideUI();
+};
 const hideUI = function () {
   containerApp.style.opacity = 0;
   resetWelcome();
 };
+
+const startLogOutTimer = function (timerStart) {
+  //set time to 5 minutes
+
+  let timer = timerStart;
+
+  //in each callback call print the remaining time to the UI
+  const options = {
+    minute: 'numeric',
+    second: 'numeric',
+  };
+  labelTimer.textContent = formatTimer(
+    timer * 1000,
+    currentAccount.locale,
+    options
+  );
+  const timerLogOut = setInterval(() => {
+    labelTimer.textContent = formatTimer(
+      timer * 1000,
+      currentAccount.locale,
+      options
+    );
+    //when reaching 0, stop timer and hide UI
+    if (timer === 0) {
+      clearInterval(timerLogOut);
+      logOut(clockInterval);
+    }
+    timer--;
+  }, 1000);
+  //return timer to check if a timer is already running when login with another user while the timer is already running
+
+  return timerLogOut;
+};
+
+const resetLogOutTimer = function () {
+  clearInterval(currentLogOutTimer);
+  currentLogOutTimer = startLogOutTimer(logOutTimerStart);
+};
+
 const clearInputField = function (field) {
   field.value = '';
   field.blur();
@@ -267,6 +319,8 @@ btnTransfer.addEventListener('click', function (e) {
     updateUI(currentAccount);
     clearInputField(inputTransferTo);
     clearInputField(inputTransferAmount);
+
+    resetLogOutTimer();
   }
 });
 
@@ -290,6 +344,7 @@ btnLoan.addEventListener('click', function (e) {
       updateUI(currentAccount);
     }, 2500);
   }
+  resetLogOutTimer();
 });
 const checkLoanAmount = function (movements, amount) {
   return amount > 0 && movements.some(mov => mov > amount * 0.1);
@@ -308,7 +363,7 @@ btnClose.addEventListener('click', function (e) {
     accounts.splice(delIndex, 1);
     clearInputField(inputCloseUsername);
     clearInputField(inputClosePin);
-    hideUI();
+    logOut();
   }
 });
 
@@ -357,6 +412,9 @@ const formatCurrency = function ({
     style: 'currency',
     currency: currency,
   }).format(amount);
+};
+const formatTimer = function (miliseconds, locale, options) {
+  return new Intl.DateTimeFormat(locale, options).format(miliseconds);
 };
 
 //fake always login//////////////////////////////////////////
