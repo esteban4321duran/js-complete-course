@@ -1,8 +1,5 @@
 'use strict';
 
-///////////////////////////////////////
-// Modal window
-
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 
@@ -12,11 +9,61 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 
 const section1 = document.querySelector('#section--1');
 const section2 = document.querySelector('#section--2');
+
 const h1 = document.querySelector('h1');
 const nav = document.querySelector('.nav');
+const navLogo = document.querySelector('.nav__logo');
 const containerNavLinks = document.querySelector('.nav__links');
 const navLinks = document.querySelectorAll('.nav__link');
 
+const containerTabs = document.querySelector('.operations__tab-container');
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContent = document.querySelectorAll('.operations__content');
+
+///////////////////////////////////////////////////////
+// nav menu fade animation
+///////////////////////////////////////////////////////
+//delegate events on the logo and links to the nav container
+const handleHover = function (e, opacity) {
+  const current = e.target;
+  if (current.classList.contains('nav__link')) {
+    const links = selectFadeLinks(current);
+    fade(current, opacity, ...links);
+  }
+};
+nav.addEventListener('mouseover', function (e) {
+  handleHover(e, 0.5);
+});
+nav.addEventListener('mouseout', function (e) {
+  handleHover(e, 1.0);
+});
+
+const selectFadeLinks = function (current) {
+  const siblings = current.closest('.nav').querySelectorAll('.nav__link');
+  const logo = current.closest('.nav').querySelector('img');
+  return [logo, ...siblings];
+};
+
+const fade = function (current, opacity, ...elements) {
+  elements.forEach(el => {
+    // debugger;
+    if (el !== current) el.style.opacity = opacity;
+  });
+};
+///////////////////////////////////////////////////////
+// sticky navigation
+///////////////////////////////////////////////////////
+
+//uneficient way: listening for scroll event
+//the scroll event is fired too many times & low end machines this might have a negative impact on the page performance
+const initialCoords = section1.getBoundingClientRect();
+window.addEventListener('scroll', function () {
+  if (window.scrollY > initialCoords.top) nav.classList.add('sticky');
+});
+
+///////////////////////////////////////////////////////
+// modal window
+///////////////////////////////////////////////////////
 const openModal = function (e) {
   e.preventDefault();
   modal.classList.remove('hidden');
@@ -28,10 +75,6 @@ const closeModal = function () {
   overlay.classList.add('hidden');
 };
 
-///////////////////////////////////////////////////////
-// event handlers
-///////////////////////////////////////////////////////
-
 btnsOpenModal.forEach(btn => btn.addEventListener('click', openModal));
 
 btnCloseModal.addEventListener('click', closeModal);
@@ -42,6 +85,10 @@ document.addEventListener('keydown', function (e) {
     closeModal();
   }
 });
+
+///////////////////////////////////////////////////////
+// smooth scrolling "learn more" button
+///////////////////////////////////////////////////////
 
 btnScrollTo.addEventListener('click', e => {
   // const section1Coords = section1.getBoundingClientRect();
@@ -64,7 +111,7 @@ btnScrollTo.addEventListener('click', e => {
   section1.scrollIntoView({ behavior: 'smooth' });
 });
 ///////////////////////////////////////////////////////
-// page navigation implementing event delegation
+// page navigation using event delegation
 ///////////////////////////////////////////////////////
 // // unefficient way: adding identical event handlers to elements
 
@@ -88,6 +135,32 @@ containerNavLinks.addEventListener('click', function (e) {
       .scrollIntoView({ behavior: 'smooth' });
   }
 });
+///////////////////////////////////////////////////////
+// tabbed component
+///////////////////////////////////////////////////////
+containerTabs.addEventListener('click', function (e) {
+  const clicked = e.target.closest('.operations__tab');
+  //Guard clause
+  if (!clicked) return;
+
+  highlightTab(tabs, clicked);
+
+  showTabContent(selectTabContent(clicked));
+});
+
+const highlightTab = function (tabs, clicked) {
+  //reset all tabs active class before adding it
+  tabs.forEach(tab => tab.classList.remove('operations__tab--active'));
+  clicked.classList.add('operations__tab--active');
+};
+
+const selectTabContent = function (clicked) {
+  return document.querySelector(`.operations__content--${clicked.dataset.tab}`);
+};
+const showTabContent = function (tabContent) {
+  tabsContent.forEach(tc => tc.classList.remove('operations__content--active'));
+  tabContent.classList.add('operations__content--active');
+};
 
 ///////////////////////////////////////////////////////
 // LECTURES
@@ -199,4 +272,37 @@ message.style.height =
 // document.body.addEventListener('click', function (e) {
 //   this.style.backgroundColor = randomColor();
 //   console.log(e.target, e.currentTarget);
+// });
+
+//**********************************************
+// DOM traversing
+// **********************************************
+// // DOWNWARDS TRAVERSING
+// console.log(h1.querySelectorAll('.highlight'));
+// console.log(h1.childNodes);
+// console.log(h1.children);
+// h1.firstElementChild.style.color = 'white';
+// h1.lastElementChild.style.color = 'orangered';
+
+// //UPWARDS TRAVERSING
+// console.log(h1.parentNode);
+// console.log(h1.parentElement);
+// h1.closest('header').style.background = 'var(--gradient-secondary)';
+
+// //SIDEWAYS TRAVERSING
+// console.log(h1.previousSibling);
+// console.log(h1.nextSibling);
+
+// if (h1.previousElementSibling)
+//   h1.previousElementSibling.style.background = 'var(--gradient-primary)';
+// if (h1.nextElementSibling)
+//   h1.nextElementSibling.style.background = 'var(--gradient-primary)';
+
+// const link1 = navLinks[1];
+// navLinks.forEach(function (l) {
+//   if (l !== link1) l.style.color = 'white';
+// });
+
+// h1.firstElementChild.addEventListener('click', function () {
+//   this.textContent = `${310 - 194}`;
 // });
