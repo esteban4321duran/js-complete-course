@@ -10,6 +10,7 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 const section1 = document.querySelector('#section--1');
 const section2 = document.querySelector('#section--2');
 
+const header = document.querySelector('.header');
 const h1 = document.querySelector('h1');
 const nav = document.querySelector('.nav');
 const navLogo = document.querySelector('.nav__logo');
@@ -56,11 +57,27 @@ const fade = function (current, opacity, ...elements) {
 
 //uneficient way: listening for scroll event
 //the scroll event is fired too many times & low end machines this might have a negative impact on the page performance
-const initialCoords = section1.getBoundingClientRect();
-window.addEventListener('scroll', function () {
-  if (window.scrollY > initialCoords.top) nav.classList.add('sticky');
-});
+// const initialCoords = section1.getBoundingClientRect();
+// window.addEventListener('scroll', function () {
+//   if (window.scrollY > initialCoords.top) nav.classList.add('sticky');
+// });
 
+//more efficient way: using the intersection observer API
+const handleStickyNav = function (entries) {
+  const [entry] = entries;
+  if (!entry.isIntersecting) nav.classList.add('sticky');
+  else nav.classList.remove('sticky');
+};
+
+const toggleStickyNav = function () {};
+const navHeight = nav.getBoundingClientRect().height;
+
+const headerObserver = new IntersectionObserver(handleStickyNav, {
+  root: null,
+  threshold: 0.0,
+  rootMargin: `-${navHeight}px`,
+});
+headerObserver.observe(header);
 ///////////////////////////////////////////////////////
 // modal window
 ///////////////////////////////////////////////////////
@@ -188,7 +205,6 @@ message.classList.add('cookie-message');
 message.innerHTML =
   'We use cookies to provide improved functionality & analytics. <button class="btn btn--close-cookie">Got it!</button>';
 
-const header = document.querySelector('.header');
 // header.prepend(message);
 header.append(message);
 // const [, , , openAcc1] = document.querySelectorAll('a');
@@ -306,3 +322,17 @@ message.style.height =
 // h1.firstElementChild.addEventListener('click', function () {
 //   this.textContent = `${310 - 194}`;
 // });
+
+//**********************************************
+// intersection observer API
+// **********************************************
+// section1.style.backgroundColor = 'lightblue';
+// const obsCallback = function (entries, observer) {
+//   entries.forEach(entry => console.log(entry));
+// };
+// const obsOptions = {
+//   root: null,
+//   threshold: [0.0, 0.2],
+// };
+// const observer = new IntersectionObserver(obsCallback, obsOptions);
+// observer.observe(section1);
