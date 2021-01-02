@@ -447,7 +447,6 @@ const buildSlider = function () {
     } else {
       currentSlide--;
     }
-    console.log(currentSlide);
     translateSlides(currentSlide, slides);
   };
 
@@ -456,7 +455,6 @@ const buildSlider = function () {
   btnRight.addEventListener('click', nextSlide);
   btnLeft.addEventListener('click', prevSlide);
   document.addEventListener('keydown', function (e) {
-    console.log(e);
     if (e.key === 'ArrowRight') nextSlide();
     else if (e.key === 'ArrowLeft') prevSlide();
   });
@@ -472,3 +470,18 @@ const buildSlider = function () {
 };
 
 buildSlider();
+
+// **********************************************
+// Lifecycle DOM events
+// **********************************************
+document.addEventListener('DOMContentLoaded', function (e) {
+  console.log('HTML parsed and DOM tree built!');
+});
+window.addEventListener('load', function (e) {
+  console.log(e);
+});
+// window.addEventListener('beforeunload', function (e) {
+//   e.preventDefault();
+//   console.log(e);
+//   e.returnValue = '';
+// });
