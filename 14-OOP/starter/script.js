@@ -170,42 +170,127 @@
 // ****************************************************
 // inheritance between "classes"
 // ****************************************************
-const Person = function (firstName, birthYear) {
-  this.firstName = firstName;
-  this.birthYear = birthYear;
-};
-const Student = function (firstName, birthYear, course) {
-  Person.call(this, firstName, birthYear);
-  this.course = course;
-};
-const Approved = function (firstName, birthYear, course, grade) {
-  Student.call(this, firstName, birthYear, course);
-  this.grade = grade;
-};
+// const Person = function (firstName, birthYear) {
+//   this.firstName = firstName;
+//   this.birthYear = birthYear;
+// };
+// const Student = function (firstName, birthYear, course) {
+//   Person.call(this, firstName, birthYear);
+//   this.course = course;
+// };
+// const Approved = function (firstName, birthYear, course, grade) {
+//   Student.call(this, firstName, birthYear, course);
+//   this.grade = grade;
+// };
 
-//link prototypes. Prototypal inheritance/delegation is achieved
-Student.prototype = Object.create(Person.prototype);
-Student.prototype.constructor = Student;
-Approved.prototype = Object.create(Student.prototype);
-Approved.prototype.constructor = Approved;
+// //link prototypes. Prototypal inheritance/delegation is achieved
+// Student.prototype = Object.create(Person.prototype);
+// Student.prototype.constructor = Student;
+// Approved.prototype = Object.create(Student.prototype);
+// Approved.prototype.constructor = Approved;
 
-const mike = new Student('Mike', 2005, 'Computer Science');
+// const mike = new Student('Mike', 2005, 'Computer Science');
 
-Person.prototype.calcAge = function (currentYear) {
-  return currentYear - this.birthYear;
-};
-Student.prototype.introduce = function () {
-  console.log(
-    `My name is ${this.firstName}. I'm ${this.calcAge(2021)} and I study ${
-      this.course
-    }.`
-  );
-};
+// Person.prototype.calcAge = function (currentYear) {
+//   return currentYear - this.birthYear;
+// };
+// Student.prototype.introduce = function () {
+//   console.log(
+//     `My name is ${this.firstName}. I'm ${this.calcAge(2021)} and I study ${
+//       this.course
+//     }.`
+//   );
+// };
 
-// mike.introduce();
-// console.dir(Student.prototype.constructor);
-const sussie = new Approved('Sussie', 2002, 'Accounting', 8.9);
+// // mike.introduce();
+// // console.dir(Student.prototype.constructor);
+// const sussie = new Approved('Sussie', 2002, 'Accounting', 8.9);
 
-//Person defines calcAge()
-//Student defines introduce()
-//an object created from the Student constructor has access to the methods in the prototype property of the Student constructor.
+// //Person defines calcAge()
+// //Student defines introduce()
+// //an object created from the Student constructor has access to the methods in the prototype property of the Student constructor.
+
+// ****************************************************
+// another class example & the encapsulation convention '_'
+// ****************************************************
+
+// //Bank accounts
+// class Account {
+//   constructor(owner, currency, pin) {
+//     this.owner = owner;
+//     this.currency = currency;
+//     this._pin = pin;
+//     //movements is protected, not quite private, yet not public by convention
+//     this._movements = [];
+//     this.locale = navigator.language;
+//     console.log(`Thanks for opening an account ${owner}`);
+//   }
+//   deposit(amount) {
+//     if (Math.abs(amount) === 0) {
+//       console.log(`The movement should be greater than 0`);
+//       return;
+//     }
+//     this._movements.push(amount);
+//   }
+//   withdrawal(amount) {
+//     this.deposit(-amount);
+//   }
+//   _approveLoan(amount) {
+//     console.log(`Loan approved`);
+//     return true;
+//   }
+//   requestLoan(amount) {
+//     if (this._approveLoan(amount)) {
+//       this.deposit(amount);
+//     }
+//   }
+// }
+
+// const account1 = new Account('Jonas', 'EUR', 1111);
+// account1.deposit(150);
+// account1.withdrawal(100);
+// account1.requestLoan(1000);
+
+// ****************************************************
+// actual encapsulation: class fields '#'
+// ****************************************************
+// //Bank accounts
+// class Account {
+//   //public fields
+//   locale = navigator.language;
+//   //private fields
+//   #movements = [];
+//   #pin;
+
+//   constructor(owner, currency, pin) {
+//     this.owner = owner;
+//     this.currency = currency;
+//     this.#pin = pin;
+//     //movements is protected, not quite private, yet not public by convention
+//     console.log(`Thanks for opening an account ${owner}`);
+//   }
+//   deposit(amount) {
+//     if (Math.abs(amount) === 0) {
+//       console.log(`The movement should be greater than 0`);
+//       return;
+//     }
+//     this.#movements.push(amount);
+//   }
+//   withdrawal(amount) {
+//     this.deposit(-amount);
+//   }
+//   #approveLoan(amount) {
+//     console.log(`Loan approved`);
+//     return true;
+//   }
+//   requestLoan(amount) {
+//     if (this.#approveLoan(amount)) {
+//       this.deposit(amount);
+//     }
+//   }
+// }
+
+// const account1 = new Account('Jonas', 'EUR', 1111);
+// account1.deposit(150);
+// account1.withdrawal(100);
+// account1.requestLoan(1000);
