@@ -339,23 +339,97 @@ const whereAmI = async function () {
 // returning from async functions
 // **************************************************
 
-console.log('1) Getting location');
-// const msg = whereAmI(); //async functions returns promises. Placeholders for future values, i.e. resolved later
-// console.log(msg);
+// console.log('1) Getting location');
+// // const msg = whereAmI(); //async functions returns promises. Placeholders for future values, i.e. resolved later
+// // console.log(msg);
 
-// this...
-// whereAmI()
-//   .then(locationMsg => console.log(`2) You are in ${locationMsg}`))
-//   .catch(error => console.error(error.message))
-//   .finally(() => console.log('3) Finished getting location'));
-// is the exact same as...
-(async () => {
-  try {
-    const locationMsg = await whereAmI();
-    console.log(`2) You are in ${locationMsg}`);
-  } catch (error) {
-    console.error(error.message);
-  } finally {
-    console.log('3) Finished getting location');
-  }
-})();
+// // this...
+// // whereAmI()
+// //   .then(locationMsg => console.log(`2) You are in ${locationMsg}`))
+// //   .catch(error => console.error(error.message))
+// //   .finally(() => console.log('3) Finished getting location'));
+// // is the exact same as this...
+// (async () => {
+//   try {
+//     const locationMsg = await whereAmI();
+//     console.log(`2) You are in ${locationMsg}`);
+//   } catch (error) {
+//     console.error(error.message);
+//   } finally {
+//     console.log('3) Finished getting location');
+//   }
+// })();
+
+// **************************************************
+// runing promises in parallel
+// **************************************************
+// const get3Countries = async function (c1, c2, c3) {
+//   try {
+//     // const [data1] = await getJSON(
+//     //   `https://restcountries.eu/rest/v2/name/${c1}`
+//     // );
+//     // const [data2] = await getJSON(
+//     //   `https://restcountries.eu/rest/v2/name/${c2}`
+//     // );
+//     // const [data3] = await getJSON(
+//     //   `https://restcountries.eu/rest/v2/name/${c3}`
+//     // );
+
+//     // console.log([data1.capital, data2.capital, data3.capital]);
+
+//     const data = await Promise.all([
+//       getJSON(`https://restcountries.eu/rest/v2/name/${c1}`),
+//       getJSON(`https://restcountries.eu/rest/v2/name/${c2}`),
+//       getJSON(`https://restcountries.eu/rest/v2/name/${c3}`),
+//     ]);
+//     const capitals = data.flat().map(d => d.capital);
+//     console.log(capitals);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+
+// get3Countries('Albania', 'Indonesia', 'Canada');
+
+// **************************************************
+// Promise.race, allSettled, any
+// **************************************************
+// (async function () {
+//   const [data] = await Promise.race([
+//     getJSON(`https://restcountries.eu/rest/v2/name/${'Spain'}`),
+//     getJSON(`https://restcountries.eu/rest/v2/name/${'Egypt'}`),
+//     getJSON(`https://restcountries.eu/rest/v2/name/${'Austria'}`),
+//   ]);
+//   console.log(data);
+// })();
+
+const connectionTimeout = function (sec) {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error('AJAX call took too long'));
+    }, sec * 1000);
+  });
+};
+
+// Promise.race([
+//   getJSON(`https://restcountries.eu/rest/v2/name/${'Austria'}`),
+//   getJSON(`https://restcountries.eu/rest/v2/name/${'Egypt'}`),
+//   getJSON(`https://restcountries.eu/rest/v2/name/${'Spain'}`),
+//   connectionTimeout(1.0),
+// ])
+//   .then(res => console.log(res[0]))
+//   .catch(err => console.error(err));
+
+Promise.allSettled([
+  Promise.resolve('Success'),
+  Promise.reject('Error'),
+  Promise.resolve('Success'),
+]).then(res => res.forEach(data => console.log(data)));
+
+Promise.all([
+  Promise.resolve('Success'),
+  Promise.reject('Error'),
+  Promise.resolve('Success'),
+])
+  .then(res => res.forEach(data => console.log(data)))
+  .catch(err => console.error(err));
