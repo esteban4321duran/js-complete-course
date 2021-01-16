@@ -48,3 +48,25 @@ addToCart('Bread', 4);
 addToCart('Cheese', 2);
 
 console.log(cart);
+
+class Person {
+  greeting = 'Hey';
+  constructor(name) {
+    this.name = name;
+  }
+  greet() {
+    console.log(`${this.greeting}, my name is ${this.name}`);
+  }
+}
+
+// ***********************************************
+// Transpilling & polyfilling
+// ***********************************************
+//ES6 real new features can't be transpilled. They need to be polyfilled
+console.log(cart.filter(el => el.quantity >= 4));
+Promise.resolve('Test').then(res => console.log(res));
+
+//Polyfilling is done by importing this library
+import 'core-js/stable';
+//Polyfilling async functions
+import 'regenerator-runtime/runtime';

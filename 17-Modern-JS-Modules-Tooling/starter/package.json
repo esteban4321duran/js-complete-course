@@ -10,8 +10,10 @@
   "author": "Esteban Duran",
   "license": "ISC",
   "dependencies": {
+    "core-js": "^3.8.2",
     "leaflet": "^1.7.1",
-    "lodash-es": "^4.17.20"
+    "lodash-es": "^4.17.20",
+    "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {
     "parcel": "^1.12.4"
