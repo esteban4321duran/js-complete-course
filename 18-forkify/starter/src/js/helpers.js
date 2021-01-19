@@ -21,3 +21,15 @@ export const getJSON = async function (url) {
     throw error;
   }
 };
+
+export const mergeTextContent = function (newMarkup, targetParentElement) {
+  const newDOM = document.createRange().createContextualFragment(newMarkup);
+  const newElements = Array.from(newDOM.querySelectorAll('*'));
+  const currentElements = Array.from(targetParentElement.querySelectorAll('*'));
+  newElements.forEach((newEl, i) => {
+    const curEl = currentElements[i];
+    console.log(newEl, curEl, newEl.isEqualNode(curEl));
+    if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== '')
+      curEl.textContent = newEl.textContent;
+  });
+};

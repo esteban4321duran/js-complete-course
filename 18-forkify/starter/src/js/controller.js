@@ -8,9 +8,9 @@ import paginationView from './views/paginationView.js';
 //////////////////////////////////////
 // Parcel. Enable hot module reload //
 //////////////////////////////////////
-if (module.hot) {
-  module.hot.accept;
-}
+// if (module.hot) {
+//   module.hot.accept;
+// }
 //////////////////////////////////////
 // API Main page
 // https://forkify-api.herokuapp.com/v2
@@ -21,7 +21,10 @@ const controlRecipes = async function () {
     if (!recipeId) return;
 
     recipeView.renderSpiner();
-
+    // update search results view to mark selected recipe
+    const resultRecipes = model.getSearchResultsPage();
+    searchResultsView.updateAndRender(resultRecipes);
+    // searchResultsView.updateAndMergeText(resultRecipes); //BUG Have to use updateAndRender because for some misterious reason updateAndMerge doesn't want to work with the search results
     // await model.loadRecipe(recipeId);
     await model.loadRecipe(recipeId);
 
@@ -64,9 +67,27 @@ const controlPagination = function (element) {
   }
 };
 
+const controlServings = function (element) {
+  if (!element) return;
+
+  //get current servings
+  const servings = model.state.recipe.servings;
+
+  //update recipe servings (in state)
+  if (element.dataset.type === 'decrease') {
+    //check if servings is a valid number
+    if (servings <= 1) return;
+    model.updateServings(servings - 1);
+  }
+  if (element.dataset.type === 'increase') model.updateServings(servings + 1);
+  //update the recipeView
+  recipeView.updateAndMergeText(model.state.recipe);
+};
+
 const init = function () {
   // implement the publisher-subscriber pattern for handling events produced on the view
   recipeView.addHandlerRender(controlRecipes);
+  recipeView.addHandlerUpdateServings(controlServings);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 };

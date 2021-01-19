@@ -475,14 +475,24 @@ var _searchView = _interopRequireDefault(require("./views/searchView.js"));
 
 var _searchResultsView = _interopRequireDefault(require("./views/searchResultsView.js"));
 
+var _paginationView = _interopRequireDefault(require("./views/paginationView.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
+//////////////////////////////////////
+// Parcel. Enable hot module reload //
+//////////////////////////////////////
+if (module.hot) {
+  module.hot.accept;
+} //////////////////////////////////////
 // API Main page
 // https://forkify-api.herokuapp.com/v2
+
+
 const controlRecipes = async function () {
   try {
     const recipeId = window.location.hash.slice(1);
@@ -501,29 +511,68 @@ const controlRecipes = async function () {
 
 const controlSearchResults = async function () {
   try {
-    _searchResultsView.default.renderSpiner(); //request recipes search results
+    _searchResultsView.default.renderSpiner(); //request search result recipes
 
 
     const query = _searchView.default.getQuery();
 
-    const recipes = await model.loadSearchResults(query); //render results to the searchResultsView
+    await model.loadSearchResults(query); //render results to the searchResultsView
+    // & render initial pagination
 
-    _searchResultsView.default.updateAndRender(model.state.search.results); //
-
+    renderSearchResultsAndPagination();
   } catch (error) {
+    console.error(error);
+
     _recipeView.default.renderError(error.message);
   }
+};
+
+const renderSearchResultsAndPagination = function () {
+  const resultRecipes = model.getSearchResultsPage();
+
+  _searchResultsView.default.updateAndRender(resultRecipes);
+
+  _paginationView.default.updateAndRender(model.state.search);
+};
+
+const controlPagination = function (element) {
+  if (!element) return;
+
+  if (element.classList.contains('pagination__btn--prev')) {
+    model.prevPage();
+    renderSearchResultsAndPagination();
+  }
+
+  if (element.classList.contains('pagination__btn--next')) {
+    model.nextPage();
+    renderSearchResultsAndPagination();
+  }
+};
+
+const controlServings = function (element) {
+  if (!element) return; //get current servings
+
+  const servings = model.state.recipe.servings; //update recipe servings (in state)
+
+  if (element.dataSet.type === 'decrease') model.updateServings(servings - 1);
+  if (element.dataSet.type === 'increase') model.updateServings(servings + 1); //update the recipeView
+
+  _recipeView.default.updateAndRender(model.state.recipe);
 };
 
 const init = function () {
   // implement the publisher-subscriber pattern for handling events produced on the view
   _recipeView.default.addHandlerRender(controlRecipes);
 
+  _recipeView.default.addHandlerUpdateServings(controlServings);
+
   _searchView.default.addHandlerSearch(controlSearchResults);
+
+  _paginationView.default.addHandlerClick(controlPagination);
 };
 
 init();
-},{"core-js/modules/es.typed-array.float32-array.js":"d5ed5e3a2e200dcf66c948e6350ae29c","core-js/modules/es.typed-array.float64-array.js":"49914eeba57759547672886c5961b9e4","core-js/modules/es.typed-array.int8-array.js":"1fc9d0d9e9c4ca72873ee75cc9532911","core-js/modules/es.typed-array.int16-array.js":"6ba53210946e69387b5af65ca70f5602","core-js/modules/es.typed-array.int32-array.js":"52f07ad61480c3da8b1b371346f2b755","core-js/modules/es.typed-array.uint8-array.js":"6042ea91f038c74624be740ff17090b9","core-js/modules/es.typed-array.uint8-clamped-array.js":"47e53ff27a819e98075783d2516842bf","core-js/modules/es.typed-array.uint16-array.js":"20f511ab1a5fbdd3a99ff1f471adbc30","core-js/modules/es.typed-array.uint32-array.js":"8212db3659c5fe8bebc2163b12c9f547","core-js/modules/es.typed-array.from.js":"183d72778e0f99cedb12a04e35ea2d50","core-js/modules/es.typed-array.of.js":"2ee3ec99d0b3dea4fec9002159200789","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","core-js/modules/web.url.js":"a66c25e402880ea6b966ee8ece30b6df","core-js/modules/web.url.to-json.js":"6357c5a053a36e38c0e24243e550dd86","core-js/modules/web.url-search-params.js":"2494aebefd4ca447de0ef4cfdd47509e","./model.js":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView.js":"bcae1aced0301b01ccacb3e6f7dfede8","./views/searchView.js":"c5d792f7cac03ef65de30cc0fbb2cae7","./views/searchResultsView.js":"ce1ec30cdb0e1d96798cb6f9f5e86cb2"}],"d5ed5e3a2e200dcf66c948e6350ae29c":[function(require,module,exports) {
+},{"core-js/modules/es.typed-array.float32-array.js":"d5ed5e3a2e200dcf66c948e6350ae29c","core-js/modules/es.typed-array.float64-array.js":"49914eeba57759547672886c5961b9e4","core-js/modules/es.typed-array.int8-array.js":"1fc9d0d9e9c4ca72873ee75cc9532911","core-js/modules/es.typed-array.int16-array.js":"6ba53210946e69387b5af65ca70f5602","core-js/modules/es.typed-array.int32-array.js":"52f07ad61480c3da8b1b371346f2b755","core-js/modules/es.typed-array.uint8-array.js":"6042ea91f038c74624be740ff17090b9","core-js/modules/es.typed-array.uint8-clamped-array.js":"47e53ff27a819e98075783d2516842bf","core-js/modules/es.typed-array.uint16-array.js":"20f511ab1a5fbdd3a99ff1f471adbc30","core-js/modules/es.typed-array.uint32-array.js":"8212db3659c5fe8bebc2163b12c9f547","core-js/modules/es.typed-array.from.js":"183d72778e0f99cedb12a04e35ea2d50","core-js/modules/es.typed-array.of.js":"2ee3ec99d0b3dea4fec9002159200789","core-js/modules/web.immediate.js":"140df4f8e97a45c53c66fead1f5a9e92","core-js/modules/web.url.js":"a66c25e402880ea6b966ee8ece30b6df","core-js/modules/web.url.to-json.js":"6357c5a053a36e38c0e24243e550dd86","core-js/modules/web.url-search-params.js":"2494aebefd4ca447de0ef4cfdd47509e","./model.js":"aabf248f40f7693ef84a0cb99f385d1f","./views/recipeView.js":"bcae1aced0301b01ccacb3e6f7dfede8","./views/searchView.js":"c5d792f7cac03ef65de30cc0fbb2cae7","./views/searchResultsView.js":"ce1ec30cdb0e1d96798cb6f9f5e86cb2","./views/paginationView.js":"d2063f3e7de2e4cdacfcb5eb6479db05"}],"d5ed5e3a2e200dcf66c948e6350ae29c":[function(require,module,exports) {
 var createTypedArrayConstructor = require('../internals/typed-array-constructor');
 
 // `Float32Array` constructor
@@ -5055,19 +5104,31 @@ $({ target: 'URL', proto: true, enumerable: true }, {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.loadSearchResults = exports.loadRecipe = exports.state = void 0;
+exports.updateServings = exports.prevPage = exports.nextPage = exports.getSearchResultsPage = exports.loadSearchResults = exports.loadRecipe = exports.state = void 0;
 
 var _regeneratorRuntime = require("regenerator-runtime");
 
-var _config = require("../js/config.js");
+var config = _interopRequireWildcard(require("./config.js"));
 
 var _helpers = require("./helpers.js");
 
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+// import {
+//   config.API_URL,
+//   config.SEARCH_RESULTS_PER_PAGE,
+//   config.STARTING_SEARCH_RESULTS_PAGE,
+// } from './config.js';
 const state = {
   recipe: {},
   search: {
     query: '',
-    results: []
+    results: [],
+    page: config.STARTING_SEARCH_RESULTS_PAGE,
+    resultsPerPage: config.SEARCH_RESULTS_PER_PAGE,
+    pageAmount: 0
   },
   bookmarks: {}
 };
@@ -5075,7 +5136,7 @@ exports.state = state;
 
 const loadRecipe = async function (recipeId) {
   try {
-    const resRecipe = await (0, _helpers.getJSON)(`${_config.API_URL}${recipeId}`);
+    const resRecipe = await (0, _helpers.getJSON)(`${config.API_URL}${recipeId}`);
     const {
       recipe: unformattedRecipe
     } = resRecipe.data;
@@ -5106,11 +5167,12 @@ const formatRecipeObject = function (recipe) {
 const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
-    const res = await (0, _helpers.getJSON)(`${_config.API_URL}?search=${query}`);
+    const res = await (0, _helpers.getJSON)(`${config.API_URL}?search=${query}`);
     const {
       recipes: unformattedRecipes
     } = res.data;
     state.search.results = unformattedRecipes.map(recipe => formatRecipeObject(recipe));
+    state.search.page = config.STARTING_SEARCH_RESULTS_PAGE;
   } catch (error) {
     throw error;
   }
@@ -5118,7 +5180,37 @@ const loadSearchResults = async function (query) {
 
 exports.loadSearchResults = loadSearchResults;
 loadSearchResults('cheese');
-},{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","../js/config.js":"09212d541c5c40ff2bd93475a904f8de","./helpers.js":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
+
+const getSearchResultsPage = function (page = state.search.page) {
+  const start = (page - 1) * state.search.resultsPerPage;
+  const end = page * state.search.resultsPerPage; //the slice method return does not include the element on the end index
+
+  return state.search.results.slice(start, end);
+};
+
+exports.getSearchResultsPage = getSearchResultsPage;
+
+const nextPage = function () {
+  state.search.page++;
+};
+
+exports.nextPage = nextPage;
+
+const prevPage = function () {
+  state.search.page--;
+};
+
+exports.prevPage = prevPage;
+
+const updateServings = function (newServings) {
+  state.recipe.ingredients.forEach(ingredient => {
+    return ingredient.quantity = ingredient.quantity * (newServings / state.recipe.servings);
+  });
+  state.recipe.servings = newServings;
+};
+
+exports.updateServings = updateServings;
+},{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","./helpers.js":"0e8dcd8a4e1c61cf18f78e1c2563655d","./config.js":"09212d541c5c40ff2bd93475a904f8de"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -5868,18 +5960,6 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],"09212d541c5c40ff2bd93475a904f8de":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.API_REQUEST_TIMEOUT = exports.API_URL = void 0;
-const API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes/`;
-exports.API_URL = API_URL;
-const API_REQUEST_TIMEOUT = 5; //in seconds
-
-exports.API_REQUEST_TIMEOUT = API_REQUEST_TIMEOUT;
 },{}],"0e8dcd8a4e1c61cf18f78e1c2563655d":[function(require,module,exports) {
 "use strict";
 
@@ -5910,7 +5990,24 @@ const getJSON = async function (url) {
 };
 
 exports.getJSON = getJSON;
-},{"./config.js":"09212d541c5c40ff2bd93475a904f8de"}],"bcae1aced0301b01ccacb3e6f7dfede8":[function(require,module,exports) {
+},{"./config.js":"09212d541c5c40ff2bd93475a904f8de"}],"09212d541c5c40ff2bd93475a904f8de":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.STARTING_SEARCH_RESULTS_PAGE = exports.SEARCH_RESULTS_PER_PAGE = exports.API_REQUEST_TIMEOUT = exports.API_URL = void 0;
+const API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes/`;
+exports.API_URL = API_URL;
+const API_REQUEST_TIMEOUT = 5; //in seconds
+
+exports.API_REQUEST_TIMEOUT = API_REQUEST_TIMEOUT;
+const SEARCH_RESULTS_PER_PAGE = 10;
+exports.SEARCH_RESULTS_PER_PAGE = SEARCH_RESULTS_PER_PAGE;
+const STARTING_SEARCH_RESULTS_PAGE = 1; // pages are numbered starting from 1. Not 0.
+
+exports.STARTING_SEARCH_RESULTS_PAGE = STARTING_SEARCH_RESULTS_PAGE;
+},{}],"bcae1aced0301b01ccacb3e6f7dfede8":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5966,12 +6063,12 @@ class RecipeView extends _view.default {
 				<span class="recipe__info-text">servings</span>
 
 				<div class="recipe__info-buttons">
-					<button class="btn--tiny btn--increase-servings">
+					<button class="btn--tiny btn--increase-servings" data-type="decrease">
 						<svg>
 							<use href="${_icons.default}#icon-minus-circle"></use>
 						</svg>
 					</button>
-					<button class="btn--tiny btn--increase-servings">
+					<button class="btn--tiny btn--increase-servings" data-type="increase">
 						<svg>
 							<use href="${_icons.default}#icon-plus-circle"></use>
 						</svg>
@@ -6054,7 +6151,7 @@ class RecipeView extends _view.default {
 		<div class="message">
 			<div>
 				<svg>
-					<use href="src/img/${_icons.default}.svg#icon-smile"></use>
+					<use href="${_icons.default}#icon-smile"></use>
 				</svg>
 			</div>
 			<p>Start by searching for a recipe or an ingredient. Have fun!</p>
@@ -6065,6 +6162,13 @@ class RecipeView extends _view.default {
 
   addHandlerRender(handler) {
     ['hashchange', 'load'].forEach(windowEvent => window.addEventListener(windowEvent, handler));
+  }
+
+  addHandlerUpdateServings(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const clickedButton = e.target.closest('.btn--tiny');
+      handler(clickedButton);
+    });
   }
 
 }
@@ -6592,6 +6696,12 @@ class View {
 
 
   updateAndRender(data) {
+    if (!data || Array.isArray(data) && data.length === 0) {
+      //check if there was no data for the requested query
+      this.renderError();
+      return;
+    }
+
     this._data = data;
 
     this._render();
@@ -6609,6 +6719,9 @@ class View {
 
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
+
+  renderError() {} //override
+
 
 }
 
@@ -6673,6 +6786,8 @@ exports.default = void 0;
 
 var _view = _interopRequireDefault(require("./view.js"));
 
+var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -6682,11 +6797,12 @@ class SearchResultsView extends _view.default {
     super(...args);
 
     _defineProperty(this, "_parentElement", document.querySelector('.results'));
+
+    _defineProperty(this, "_errorMessage", `No recipes found with your query :( Please try again.`);
   }
 
-  _generateMarkup() {
-    console.log(this._data[0]);
-    return this._data.map(result => this._generateResultMarkup(result)).join('');
+  _generateMarkup(resultsData) {
+    return resultsData.map(result => this._generateResultMarkup(result)).join('');
   }
 
   _generateResultMarkup(result) {
@@ -6707,6 +6823,22 @@ class SearchResultsView extends _view.default {
 				</div>
 			</a>
 		</li>`;
+  } //public API
+
+
+  renderError(message = this._errorMessage) {
+    const markup = `<div class="error">
+		<div>
+			<svg>
+				<use href="${_icons.default}#icon-alert-triangle"></use>
+			</svg>
+		</div>
+		<p>${message}</p>
+	</div>`;
+
+    this._clearParentElement();
+
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
 
 }
@@ -6714,6 +6846,113 @@ class SearchResultsView extends _view.default {
 var _default = new SearchResultsView();
 
 exports.default = _default;
-},{"./view.js":"6a3957d8744bf1d70b2b44f3726dda59"}]},{},["93839c56ce7d01d6e6eb24337aea91ec","3529cd61f225ec569e490f26261614f0","175e469a7ea7db1c8c0744d04372621f"], null)
+},{"./view.js":"6a3957d8744bf1d70b2b44f3726dda59","url:../../img/icons.svg":"6775fbd5e354541752101a96faaa604f"}],"d2063f3e7de2e4cdacfcb5eb6479db05":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _view = _interopRequireDefault(require("./view.js"));
+
+var _icons = _interopRequireDefault(require("url:../../img/icons.svg"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+class PaginationView extends _view.default {
+  constructor(...args) {
+    super(...args);
+
+    _defineProperty(this, "_parentElement", document.querySelector('.pagination'));
+  }
+
+  // _render() {
+  //   const markup = this._generateMarkup(this._data);
+  //   this._parentElement.insertAdjacentHTML('beforeend', markup);
+  // }
+  _generateMarkup(resultsData) {
+    const page = resultsData.page;
+    const pageAmount = Math.ceil(resultsData.results.length / resultsData.resultsPerPage); //case: page 1, more than 1 page
+
+    if (page === 1 && pageAmount > 1) {
+      return this._generatePaginationMarkup(page, 'next');
+    }
+
+    if (page === pageAmount && pageAmount > 1) {
+      //case: last page
+      return this._generatePaginationMarkup(page, 'prev');
+    } //case: page 1, only 1 page
+
+
+    if (pageAmount === 1) {
+      return this._generatePaginationMarkup(page, 'none');
+    } //case: other page
+
+
+    if (page < pageAmount) {
+      return this._generatePaginationMarkup(page, 'both');
+    }
+  }
+
+  _generatePaginationMarkup(page, type) {
+    let markup = '';
+
+    if (type === 'prev') {
+      markup += `
+		<button class="btn--inline pagination__btn--prev">
+			<svg class="search__icon">
+				<use href="${_icons.default}#icon-arrow-left"></use>
+			</svg>
+			<span>Page ${page - 1}</span>
+		</button>
+		`;
+    }
+
+    if (type === 'next') {
+      markup += `<button class="btn--inline pagination__btn--next">
+				<span>Page ${page + 1}</span>
+				<svg class="search__icon">
+					<use href="${_icons.default}#icon-arrow-right"></use>
+				</svg>
+			</button> `;
+    }
+
+    if (type === 'both') {
+      markup += `
+		<button class="btn--inline pagination__btn--prev">
+			<svg class="search__icon">
+				<use href="${_icons.default}#icon-arrow-left"></use>
+			</svg>
+			<span>Page ${page - 1}</span>
+		</button>
+		<button class="btn--inline pagination__btn--next">
+				<span>Page ${page + 1}</span>
+				<svg class="search__icon">
+					<use href="${_icons.default}#icon-arrow-right"></use>
+				</svg>
+			</button>
+			`;
+    }
+
+    if (type === 'none') markup = '';
+    return markup;
+  }
+
+  addHandlerClick(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const clickedButton = e.target.closest('.btn--inline');
+      handler(clickedButton);
+    });
+  }
+
+}
+
+var _default = new PaginationView();
+
+exports.default = _default;
+},{"./view.js":"6a3957d8744bf1d70b2b44f3726dda59","url:../../img/icons.svg":"6775fbd5e354541752101a96faaa604f"}]},{},["93839c56ce7d01d6e6eb24337aea91ec","3529cd61f225ec569e490f26261614f0","175e469a7ea7db1c8c0744d04372621f"], null)
 
 //# sourceMappingURL=controller.bedc5acd.js.map

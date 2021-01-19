@@ -1,9 +1,10 @@
 import { async } from 'regenerator-runtime';
-import {
-  API_URL,
-  SEARCH_RESULTS_PER_PAGE,
-  STARTING_SEARCH_RESULTS_PAGE,
-} from '../js/config.js';
+// import {
+//   config.API_URL,
+//   config.SEARCH_RESULTS_PER_PAGE,
+//   config.STARTING_SEARCH_RESULTS_PAGE,
+// } from './config.js';
+import * as config from './config.js';
 import { getJSON } from './helpers.js';
 
 export const state = {
@@ -11,16 +12,15 @@ export const state = {
   search: {
     query: '',
     results: [],
-    page: STARTING_SEARCH_RESULTS_PAGE,
-    resultsPerPage: SEARCH_RESULTS_PER_PAGE,
+    page: config.STARTING_SEARCH_RESULTS_PAGE,
+    resultsPerPage: config.SEARCH_RESULTS_PER_PAGE,
     pageAmount: 0,
   },
   bookmarks: {},
 };
-
 export const loadRecipe = async function (recipeId) {
   try {
-    const resRecipe = await getJSON(`${API_URL}${recipeId}`);
+    const resRecipe = await getJSON(`${config.API_URL}${recipeId}`);
     const { recipe: unformattedRecipe } = resRecipe.data;
     state.recipe = formatRecipeObject(unformattedRecipe);
     // console.log(recipe);
@@ -48,12 +48,13 @@ const formatRecipeObject = function (recipe) {
 export const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
-    const res = await getJSON(`${API_URL}?search=${query}`);
+    const res = await getJSON(`${config.API_URL}?search=${query}`);
     const { recipes: unformattedRecipes } = res.data;
     state.search.results = unformattedRecipes.map(recipe =>
       formatRecipeObject(recipe)
     );
-    state.search.page = STARTING_SEARCH_RESULTS_PAGE;
+
+    state.search.page = config.STARTING_SEARCH_RESULTS_PAGE;
   } catch (error) {
     throw error;
   }
@@ -72,4 +73,12 @@ export const nextPage = function () {
 };
 export const prevPage = function () {
   state.search.page--;
+};
+
+export const updateServings = function (newServings) {
+  state.recipe.ingredients.forEach(ingredient => {
+    return (ingredient.quantity =
+      ingredient.quantity * (newServings / state.recipe.servings));
+  });
+  state.recipe.servings = newServings;
 };

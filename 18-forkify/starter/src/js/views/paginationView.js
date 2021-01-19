@@ -70,8 +70,8 @@ class PaginationView extends View {
   }
   addHandlerClick(handler) {
     this._parentElement.addEventListener('click', function (e) {
-      const button = e.target.closest('.btn--inline');
-      handler(button);
+      const clickedButton = e.target.closest('.btn--inline');
+      handler(clickedButton);
     });
   }
 }
