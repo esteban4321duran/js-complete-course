@@ -1,23 +1,14 @@
 import icons from 'url:../../img/icons.svg';
 import { Fraction } from 'fractional';
+import View from './view.js';
 
-class RecipeView {
-  #parentElement = document.querySelector('.recipe');
-  #data;
-  #errorMessage = `We couldn't find that recipe :(\nPlease try another one`;
-  #message = '';
-  constructor() {}
+class RecipeView extends View {
+  _parentElement = document.querySelector('.recipe');
+  _data;
+  _errorMessage = `We couldn't find that recipe :(\nPlease try another one`;
+  _message = '';
 
-  updateAndRender(data) {
-    this.#data = data;
-    this.#render();
-  }
-  #render() {
-    const markup = this.#generateMarkup(this.#data);
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-  #generateMarkup(recipe) {
+  _generateMarkup(recipe) {
     return `
 		<figure class="recipe__fig">
 			<img src="${recipe.image}" alt="${recipe.title}" class="recipe__img" />
@@ -74,7 +65,7 @@ class RecipeView {
 		<div class="recipe__ingredients">
 			<h2 class="heading--2">Recipe ingredients</h2>
 			<ul class="recipe__ingredient-list">
-				${recipe.ingredients.map(ing => this.#generateIngredientsMarkup(ing)).join('')}
+				${recipe.ingredients.map(ing => this._generateIngredientsMarkup(ing)).join('')}
 			</ul>
 		</div>
 
@@ -98,7 +89,7 @@ class RecipeView {
 		</div>
 `;
   }
-  #generateIngredientsMarkup(ing) {
+  _generateIngredientsMarkup(ing) {
     return `
 		<li class="recipe__ingredient">
 			<svg class="recipe__icon">
@@ -113,20 +104,10 @@ class RecipeView {
 			</div>
 		</li>`;
   }
-  #clear() {
-    this.#parentElement.innerHTML = '';
-  }
-  renderSpiner() {
-    const markup = `
-		<div class="spinner">
-			<svg>
-				<use href="${icons}#icon-loader"></use>
-			</svg>
-		</div>`;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-  renderError(message = this.#errorMessage) {
+
+  // Public API
+
+  renderError(message = this._errorMessage) {
     const markup = `<div class="error">
 		<div>
 			<svg>
@@ -135,15 +116,15 @@ class RecipeView {
 		</div>
 		<p>${message}</p>
 	</div>`;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    this._clearParentElement();
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
-  renderMessage(message = this.#message) {
+  renderMessage(message = this._message) {
     const markup = `<div class="recipe">
 		<div class="message">
 			<div>
 				<svg>
-					<use href="src/img/${icons}.svg#icon-smile"></use>
+					<use href="${icons}#icon-smile"></use>
 				</svg>
 			</div>
 			<p>Start by searching for a recipe or an ingredient. Have fun!</p>
