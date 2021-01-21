@@ -23,8 +23,7 @@ const controlRecipes = async function () {
     recipeView.renderSpiner();
     // update search results view to mark selected recipe
     const resultRecipes = model.getSearchResultsPage();
-    searchResultsView.updateAndRender(resultRecipes);
-    // searchResultsView.updateAndMergeText(resultRecipes); //BUG Have to use updateAndRender because for some misterious reason updateAndMerge doesn't want to work with the search results
+    searchResultsView.updateAndMergeText(resultRecipes);
     // await model.loadRecipe(recipeId);
     await model.loadRecipe(recipeId);
 
@@ -84,10 +83,18 @@ const controlServings = function (element) {
   recipeView.updateAndMergeText(model.state.recipe);
 };
 
+const controlAddBookmark = function (element) {
+  if (!element) return;
+  model.addBookmark(model.state.recipe);
+  console.log(model.state.recipe);
+  recipeView.updateAndMergeText(model.state.recipe);
+};
+
 const init = function () {
   // implement the publisher-subscriber pattern for handling events produced on the view
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
+  recipeView.addHandlerAddBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 };

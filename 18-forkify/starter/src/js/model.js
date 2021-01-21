@@ -16,7 +16,7 @@ export const state = {
     resultsPerPage: config.SEARCH_RESULTS_PER_PAGE,
     pageAmount: 0,
   },
-  bookmarks: {},
+  bookmarks: [],
 };
 export const loadRecipe = async function (recipeId) {
   try {
@@ -81,4 +81,12 @@ export const updateServings = function (newServings) {
       ingredient.quantity * (newServings / state.recipe.servings));
   });
   state.recipe.servings = newServings;
+};
+
+export const addBookmark = function (recipe) {
+  //Add bookmark
+  state.bookmarks.push(recipe);
+
+  //Mark current recipe as bookmarked
+  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
 };

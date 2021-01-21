@@ -502,8 +502,7 @@ const controlRecipes = async function () {
 
     const resultRecipes = model.getSearchResultsPage();
 
-    _searchResultsView.default.updateAndRender(resultRecipes); // searchResultsView.updateAndMergeText(resultRecipes); //BUG Have to use updateAndRender because for some misterious reason updateAndMerge doesn't want to work with the search results
-    // await model.loadRecipe(recipeId);
+    _searchResultsView.default.updateAndMergeText(resultRecipes); // await model.loadRecipe(recipeId);
 
 
     await model.loadRecipe(recipeId);
@@ -570,11 +569,21 @@ const controlServings = function (element) {
   _recipeView.default.updateAndMergeText(model.state.recipe);
 };
 
+const controlAddBookmark = function (element) {
+  if (!element) return;
+  model.addBookmark(model.state.recipe);
+  console.log(model.state.recipe);
+
+  _recipeView.default.updateAndMergeText(model.state.recipe);
+};
+
 const init = function () {
   // implement the publisher-subscriber pattern for handling events produced on the view
   _recipeView.default.addHandlerRender(controlRecipes);
 
   _recipeView.default.addHandlerUpdateServings(controlServings);
+
+  _recipeView.default.addHandlerAddBookmark(controlAddBookmark);
 
   _searchView.default.addHandlerSearch(controlSearchResults);
 
@@ -5114,7 +5123,7 @@ $({ target: 'URL', proto: true, enumerable: true }, {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateServings = exports.prevPage = exports.nextPage = exports.getSearchResultsPage = exports.loadSearchResults = exports.loadRecipe = exports.state = void 0;
+exports.addBookmark = exports.updateServings = exports.prevPage = exports.nextPage = exports.getSearchResultsPage = exports.loadSearchResults = exports.loadRecipe = exports.state = void 0;
 
 var _regeneratorRuntime = require("regenerator-runtime");
 
@@ -5140,7 +5149,7 @@ const state = {
     resultsPerPage: config.SEARCH_RESULTS_PER_PAGE,
     pageAmount: 0
   },
-  bookmarks: {}
+  bookmarks: []
 };
 exports.state = state;
 
@@ -5220,6 +5229,15 @@ const updateServings = function (newServings) {
 };
 
 exports.updateServings = updateServings;
+
+const addBookmark = function (recipe) {
+  //Add bookmark
+  state.bookmarks.push(recipe); //Mark current recipe as bookmarked
+
+  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+};
+
+exports.addBookmark = addBookmark;
 },{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","./config.js":"09212d541c5c40ff2bd93475a904f8de","./helpers.js":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -6023,9 +6041,10 @@ const mergeTextContent = function (newMarkup, targetParentElement) {
   const newElements = Array.from(newDOM.querySelectorAll('*'));
   const currentElements = Array.from(targetParentElement.querySelectorAll('*'));
   newElements.forEach((newEl, i) => {
-    const curEl = currentElements[i];
-    console.log(newEl, curEl, newEl.isEqualNode(curEl));
+    const curEl = currentElements[i]; // console.log(newEl, curEl, newEl.isEqualNode(curEl));
+
     if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== '') curEl.textContent = newEl.textContent;
+    if (!newEl.isEqualNode(curEl)) Array.from(newEl.attributes).forEach(attr => curEl.setAttribute(attr.name, attr.value));
   });
 };
 
@@ -6106,7 +6125,7 @@ class RecipeView extends _view.default {
 			</div>
 			<button class="btn--round">
 				<svg class="">
-					<use href="${_icons.default}#icon-bookmark-fill"></use>
+					<use href="${_icons.default}#icon-bookmark${this._data.bookmarked ? ' -fill' : ''}"></use>
 				</svg>
 			</button>
 		</div>
@@ -6191,6 +6210,13 @@ class RecipeView extends _view.default {
     this._parentElement.addEventListener('click', function (e) {
       const clickedButton = e.target.closest('.btn--tiny');
       handler(clickedButton);
+    });
+  }
+
+  addHandlerAddBookmark(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const bookmarkButton = e.target.closest('.btn--round');
+      handler(bookmarkButton);
     });
   }
 
