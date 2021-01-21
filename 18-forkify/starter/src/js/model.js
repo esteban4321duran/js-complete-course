@@ -33,6 +33,10 @@ export const loadRecipe = async function (recipeId) {
 };
 
 const formatRecipeObject = function (recipe) {
+  //determine if the recipe we're loading was already bookmarked
+  const isBookmarked = state.bookmarks.some(
+    bookmark => bookmark.id === recipe.id
+  );
   return {
     cookingTime: recipe.cooking_time,
     id: recipe.id,
@@ -42,6 +46,7 @@ const formatRecipeObject = function (recipe) {
     servings: recipe.servings,
     source: recipe.source_url,
     title: recipe.title,
+    bookmarked: isBookmarked,
   };
 };
 
@@ -89,4 +94,12 @@ export const addBookmark = function (recipe) {
 
   //Mark current recipe as bookmarked
   if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+};
+
+export const deleteBookmark = function (id) {
+  //Find index of the bookmark we want to delete
+  const delIndex = state.bookmarks.findIndex(bookmark => bookmark.id === id);
+  state.bookmarks.splice(delIndex, 1);
+  //unmark the current recipe as bookmarked
+  if (id === state.recipe.id) state.recipe.bookmarked = false;
 };

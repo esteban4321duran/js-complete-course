@@ -4,6 +4,7 @@ import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import searchResultsView from './views/searchResultsView.js';
 import paginationView from './views/paginationView.js';
+import bookmarksView from './views/bookmarksView.js';
 
 //////////////////////////////////////
 // Parcel. Enable hot module reload //
@@ -23,7 +24,9 @@ const controlRecipes = async function () {
     recipeView.renderSpiner();
     // update search results view to mark selected recipe
     const resultRecipes = model.getSearchResultsPage();
-    searchResultsView.updateAndMergeText(resultRecipes);
+    searchResultsView.updateAndMergeHTML(resultRecipes);
+    // update bookmarks view to mark selected recipe
+    bookmarksView.updateAndMergeHTML(model.state.bookmarks);
     // await model.loadRecipe(recipeId);
     await model.loadRecipe(recipeId);
 
@@ -80,14 +83,20 @@ const controlServings = function (element) {
   }
   if (element.dataset.type === 'increase') model.updateServings(servings + 1);
   //update the recipeView
-  recipeView.updateAndMergeText(model.state.recipe);
+  recipeView.updateAndMergeHTML(model.state.recipe);
 };
 
 const controlAddBookmark = function (element) {
+  //add/remove bookmark
   if (!element) return;
-  model.addBookmark(model.state.recipe);
-  console.log(model.state.recipe);
-  recipeView.updateAndMergeText(model.state.recipe);
+  if (!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe);
+  else model.deleteBookmark(model.state.recipe.id);
+
+  //Update recipe view
+  recipeView.updateAndMergeHTML(model.state.recipe);
+
+  //update bookmarks view
+  bookmarksView.updateAndRender(model.state.bookmarks);
 };
 
 const init = function () {
