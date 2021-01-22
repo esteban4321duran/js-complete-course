@@ -46,6 +46,11 @@ class BookmarksView extends View {
     this._clearParentElement();
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
+
+  //On the controller we were trying to merge the new bookmarks HTML with some other bookmarks that were never loaded before. Because of that we will render our bookmarks right after they've been loaded from localStorage
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
+  }
 }
 
 export default new BookmarksView();

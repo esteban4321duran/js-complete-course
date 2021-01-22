@@ -46,6 +46,9 @@ class SearchResultsView extends View {
     this._clearParentElement();
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
+  }
 }
 
 export default new SearchResultsView();

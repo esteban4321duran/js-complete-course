@@ -488,12 +488,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 //////////////////////////////////////
 // Parcel. Enable hot module reload //
 //////////////////////////////////////
-// if (module.hot) {
-//   module.hot.accept;
-// }
-//////////////////////////////////////
+if (module.hot) {
+  module.hot.accept;
+} //////////////////////////////////////
 // API Main page
 // https://forkify-api.herokuapp.com/v2
+
+
 const controlRecipes = async function () {
   try {
     const recipeId = window.location.hash.slice(1);
@@ -514,7 +515,9 @@ const controlRecipes = async function () {
 
     _recipeView.default.updateAndRender(model.state.recipe);
   } catch (error) {
-    _recipeView.default.renderError();
+    console.error(error);
+
+    _recipeView.default.renderError(error.message);
   }
 };
 
@@ -585,8 +588,14 @@ const controlAddBookmark = function (element) {
   _bookmarksView.default.updateAndRender(model.state.bookmarks);
 };
 
-const init = function () {
+const controlBookmarks = function () {
+  _bookmarksView.default.updateAndRender(model.state.bookmarks);
+};
+
+const init = async function () {
   // implement the publisher-subscriber pattern for handling events produced on the view
+  _bookmarksView.default.addHandlerRender(controlBookmarks);
+
   _recipeView.default.addHandlerRender(controlRecipes);
 
   _recipeView.default.addHandlerUpdateServings(controlServings);
@@ -594,6 +603,8 @@ const init = function () {
   _recipeView.default.addHandlerAddBookmark(controlAddBookmark);
 
   _searchView.default.addHandlerSearch(controlSearchResults);
+
+  _searchResultsView.default.addHandlerRender(controlSearchResults);
 
   _paginationView.default.addHandlerClick(controlPagination);
 };
@@ -5131,7 +5142,7 @@ $({ target: 'URL', proto: true, enumerable: true }, {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.deleteBookmark = exports.addBookmark = exports.updateServings = exports.prevPage = exports.nextPage = exports.getSearchResultsPage = exports.loadSearchResults = exports.loadRecipe = exports.state = void 0;
+exports.loadBookmarks = exports.deleteBookmark = exports.addBookmark = exports.updateServings = exports.prevPage = exports.nextPage = exports.getSearchResultsPage = exports.loadSearchResults = exports.loadRecipe = exports.state = void 0;
 
 var _regeneratorRuntime = require("regenerator-runtime");
 
@@ -5245,7 +5256,9 @@ const addBookmark = function (recipe) {
   //Add bookmark
   state.bookmarks.push(recipe); //Mark current recipe as bookmarked
 
-  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+  if (recipe.id === state.recipe.id) state.recipe.bookmarked = true; // update the bookmarks data in localStorage
+
+  storeBookmarks();
 };
 
 exports.addBookmark = addBookmark;
@@ -5255,10 +5268,31 @@ const deleteBookmark = function (id) {
   const delIndex = state.bookmarks.findIndex(bookmark => bookmark.id === id);
   state.bookmarks.splice(delIndex, 1); //unmark the current recipe as bookmarked
 
-  if (id === state.recipe.id) state.recipe.bookmarked = false;
+  if (id === state.recipe.id) state.recipe.bookmarked = false; // update the bookmarks data in localStorage
+
+  storeBookmarks();
 };
 
 exports.deleteBookmark = deleteBookmark;
+
+const storeBookmarks = function () {
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+};
+
+const loadBookmarks = function () {
+  const data = localStorage.getItem('bookmarks');
+  if (!data) return;
+  state.bookmarks = JSON.parse(data);
+};
+
+exports.loadBookmarks = loadBookmarks;
+
+const init = function () {
+  loadBookmarks();
+  console.log(state.bookmarks);
+};
+
+init();
 },{"regenerator-runtime":"e155e0d3930b156f86c48e8d05522b16","./config.js":"09212d541c5c40ff2bd93475a904f8de","./helpers.js":"0e8dcd8a4e1c61cf18f78e1c2563655d"}],"e155e0d3930b156f86c48e8d05522b16":[function(require,module,exports) {
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -6922,6 +6956,10 @@ class SearchResultsView extends _view.default {
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
   }
 
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
+  }
+
 }
 
 var _default = new SearchResultsView();
@@ -7098,6 +7136,11 @@ class BookmarksView extends _view.default {
     this._clearParentElement();
 
     this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  } //On the controller we were trying to merge the new bookmarks HTML with some other bookmarks that were never loaded before. Because of that we will render our bookmarks right after they've been loaded from localStorage
+
+
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
   }
 
 }
@@ -7105,6 +7148,6 @@ class BookmarksView extends _view.default {
 var _default = new BookmarksView();
 
 exports.default = _default;
-},{"./view.js":"6a3957d8744bf1d70b2b44f3726dda59","url:../../img/icons.svg":"772c82f30395fb0c9bc4800a9be3b567"}]},{},["cecab51c57027216a0dcd1d133b00ea4","1ebf0956e594af66cc9d8a4318e4e192","175e469a7ea7db1c8c0744d04372621f"], null)
+},{"url:../../img/icons.svg":"772c82f30395fb0c9bc4800a9be3b567","./view.js":"6a3957d8744bf1d70b2b44f3726dda59"}]},{},["cecab51c57027216a0dcd1d133b00ea4","1ebf0956e594af66cc9d8a4318e4e192","175e469a7ea7db1c8c0744d04372621f"], null)
 
 //# sourceMappingURL=controller.e550eae4.js.map

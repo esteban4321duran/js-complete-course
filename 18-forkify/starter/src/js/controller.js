@@ -9,9 +9,9 @@ import bookmarksView from './views/bookmarksView.js';
 //////////////////////////////////////
 // Parcel. Enable hot module reload //
 //////////////////////////////////////
-// if (module.hot) {
-//   module.hot.accept;
-// }
+if (module.hot) {
+  module.hot.accept;
+}
 //////////////////////////////////////
 // API Main page
 // https://forkify-api.herokuapp.com/v2
@@ -32,7 +32,8 @@ const controlRecipes = async function () {
 
     recipeView.updateAndRender(model.state.recipe);
   } catch (error) {
-    recipeView.renderError();
+    console.error(error);
+    recipeView.renderError(error.message);
   }
 };
 
@@ -99,12 +100,18 @@ const controlAddBookmark = function (element) {
   bookmarksView.updateAndRender(model.state.bookmarks);
 };
 
-const init = function () {
+const controlBookmarks = function () {
+  bookmarksView.updateAndRender(model.state.bookmarks);
+};
+
+const init = async function () {
   // implement the publisher-subscriber pattern for handling events produced on the view
+  bookmarksView.addHandlerRender(controlBookmarks);
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
   recipeView.addHandlerAddBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
+  searchResultsView.addHandlerRender(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 };
 init();
